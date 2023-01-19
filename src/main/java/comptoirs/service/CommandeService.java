@@ -1,7 +1,11 @@
 package comptoirs.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
+import comptoirs.dao.ProduitRepository;
+import comptoirs.entity.Ligne;
+import comptoirs.entity.Produit;
 import org.springframework.stereotype.Service;
 
 import comptoirs.dao.ClientRepository;
@@ -14,13 +18,15 @@ public class CommandeService {
     // La couche "Service" utilise la couche "Accès aux données" pour effectuer les traitements
     private final CommandeRepository commandeDao;
     private final ClientRepository clientDao;
-    
+
+    private final ProduitRepository produitDao;
 
     // @Autowired
     // La couche "Service" utilise la couche "Accès aux données" pour effectuer les traitements
-    public CommandeService(CommandeRepository commandeDao, ClientRepository clientDao) {
+    public CommandeService(CommandeRepository commandeDao, ClientRepository clientDao, ProduitRepository produitDao) {
         this.commandeDao = commandeDao;
         this.clientDao = clientDao;
+        this.produitDao = produitDao;
     }
     /**
      * Service métier : Enregistre une nouvelle commande pour un client connu par sa clé
@@ -63,7 +69,25 @@ public class CommandeService {
      */
     @Transactional
     public Commande enregistreExpédition(Integer commandeNum) {
-        // TODO : implémenter ce service métier
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        // On vérifie si la commande existes
+        var commande = commandeDao.findById(commandeNum).orElseThrow();
+        // On vérifie si la commande n'est pas encore envoyée
+        var estEnvoyee = commande.getEnvoyeele();
+        // Si la commande n'est pas encore envoyé, on définit la date d'envoi avec la date du jour
+        if(estEnvoyee == null){
+            commande.setEnvoyeele(LocalDate.now());
+        }
+        // On récupère les lignes de la commande
+        var ligneDeCommandes = commande.getLignes();
+        for(Ligne ligne : ligneDeCommandes) {
+            // On récupère chaque produit
+            var produit = ligne.getProduit();
+            // On décréménte la quantité en stock du produit de la quantité commandé
+            produit.setUnitesEnStock(produit.getUnitesEnStock() - ligne.getQuantite());
+            // On met à effet la modification du produit dans la base de donnée
+            produitDao.save(produit);
+        }
+        // On met à effet la modification de la commande dans la base de donnée
+        return commande;
     }
 }
