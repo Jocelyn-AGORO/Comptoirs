@@ -66,6 +66,8 @@ public class LigneService {
             produit.setUnitesCommandees(produit.getUnitesCommandees() + quantite);
             // Mettre à jour le nombre de produit commandé dans la base de données
             produitDao.save(produit);
+        }else {
+            throw new IllegalArgumentException("Aucune ligne ajoutée");
         }
         return ligne;
     }

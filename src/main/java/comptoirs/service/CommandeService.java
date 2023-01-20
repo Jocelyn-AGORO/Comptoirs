@@ -19,14 +19,14 @@ public class CommandeService {
     private final CommandeRepository commandeDao;
     private final ClientRepository clientDao;
 
-    private final ProduitRepository produitDao;
+    // private final ProduitRepository produitDao;
 
     // @Autowired
     // La couche "Service" utilise la couche "Accès aux données" pour effectuer les traitements
-    public CommandeService(CommandeRepository commandeDao, ClientRepository clientDao, ProduitRepository produitDao) {
+    public CommandeService(CommandeRepository commandeDao, ClientRepository clientDao /*, ProduitRepository produitDao*/) {
         this.commandeDao = commandeDao;
         this.clientDao = clientDao;
-        this.produitDao = produitDao;
+        // this.produitDao = produitDao;
     }
     /**
      * Service métier : Enregistre une nouvelle commande pour un client connu par sa clé
@@ -85,7 +85,7 @@ public class CommandeService {
             // On décréménte la quantité en stock du produit de la quantité commandé
             produit.setUnitesEnStock(produit.getUnitesEnStock() - ligne.getQuantite());
             // On met à effet la modification du produit dans la base de donnée
-            produitDao.save(produit);
+            // produitDao.save(produit);
         }
         // On met à effet la modification de la commande dans la base de donnée
         return commande;
