@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import comptoirs.dao.ProduitRepository;
 import comptoirs.entity.Ligne;
 import comptoirs.entity.Produit;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import comptoirs.dao.ClientRepository;
@@ -68,18 +69,20 @@ public class CommandeService {
      * @return la commande mise à jour
      */
     @Transactional
-    public Commande enregistreExpédition(Integer commandeNum) {
-        // On vérifie si la commande existes
+    public Commande enregistreExpedition(Integer commandeNum) {
+        // On vérifie si la commande existe
         var commande = commandeDao.findById(commandeNum).orElseThrow();
         // On vérifie si la commande n'est pas encore envoyée
         var estEnvoyee = commande.getEnvoyeele();
-        // Si la commande n'est pas encore envoyé, on définit la date d'envoi avec la date du jour
+        // Si la commande n'est pas encore envoyé, on définit la date d'envoi comme la date du jour
         if(estEnvoyee == null){
             commande.setEnvoyeele(LocalDate.now());
+        }else {
+            throw new DataIntegrityViolationException("Cette commande a été déjà livrée");
         }
         // On récupère les lignes de la commande
-        var ligneDeCommandes = commande.getLignes();
-        for(Ligne ligne : ligneDeCommandes) {
+        var lignesDeCommande = commande.getLignes();
+        for(Ligne ligne : lignesDeCommande) {
             // On récupère chaque produit
             var produit = ligne.getProduit();
             // On décréménte la quantité en stock du produit de la quantité commandé

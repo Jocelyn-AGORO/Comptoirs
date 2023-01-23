@@ -90,9 +90,13 @@ class LigneServiceTest {
         Integer commandeNum = NUMERO_COMMANDE_PAS_LIVREE;
         Integer produitRef = REFERENCE_PRODUIT_DISPONIBLE_1;
         int quantite = 5;
+        // On récupère le produit avant de l'ajouter à la ligne de commande
         var produit = produitDao.findById(produitRef).orElseThrow();
         int quantiteCommandee = produit.getUnitesCommandees() ;
         service.ajouterLigne(commandeNum, produitRef, quantite);
+        // On récupère le produit après l'avoir ajouter à la ligne de commande
+        produit = produitDao.findById(produitRef).orElseThrow();
+        // On vérifie si la mise à jour du nombre d'unités commandée a été prise en compte
         assertEquals(quantiteCommandee + quantite, produit.getUnitesCommandees());
     }
 }
