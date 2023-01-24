@@ -61,16 +61,18 @@ class CommandeServiceTest {
     }
 
     @Test
-    public void testAjouterLigneCommandeInexistante() {
+    public void testExpedierCommandeInexistante() {
         Integer commandeNum = NUMERO_COMMANDE_INEXISTANTE;
-        assertThrows(NoSuchElementException.class, () -> service.enregistreExpedition(commandeNum));
+        assertThrows(NoSuchElementException.class, () -> service.enregistreExpedition(commandeNum),
+                "On ne peut pas expédier une commande inexistante");
     }
 
 
     @Test
     void testCommandeDejaLivree() {
         Integer commandeNum = NUMERO_COMMANDE_DEJA_LIVREE;
-        assertThrows(DataIntegrityViolationException.class, () -> service.enregistreExpedition(commandeNum));
+        assertThrows(DataIntegrityViolationException.class, () -> service.enregistreExpedition(commandeNum),
+                "On ne peut pas livrée dont la date de livraison existe déjà");
     }
 
     @Test
@@ -79,7 +81,8 @@ class CommandeServiceTest {
         Integer commandeNum = NUMERO_COMMANDE_PAS_LIVREE;
         var commande = service.enregistreExpedition(commandeNum);
         for(Ligne ligne : commande.getLignes()){
-            assertEquals(10, ligne.getProduit().getUnitesEnStock());
+            assertEquals(10, ligne.getProduit().getUnitesEnStock(),
+                    "La quantité en stock doit être 10 conformément aux données de tests");
         }
     }
 
@@ -87,7 +90,8 @@ class CommandeServiceTest {
     public void verifierDateExpedition() {
         Integer commandeNum = NUMERO_COMMANDE_PAS_LIVREE;
         var commande = service.enregistreExpedition(commandeNum);
-        assertEquals(LocalDate.now(), commande.getEnvoyeele(), "La date d'expédition de la commande doit correspondre à la date aujourd'hui");
+        assertEquals(LocalDate.now(), commande.getEnvoyeele(),
+                "Pour une commande non livrée , la date d'expédition de la commande doit correspondre à la date aujourd'hui");
     }
 
 }

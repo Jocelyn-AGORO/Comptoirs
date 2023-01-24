@@ -64,7 +64,8 @@ class LigneServiceTest {
         assertEquals(Optional.empty(), produitDao.findById(produitRef));
         assertNotNull(commandeDao.findById(commandeNum));
 
-        assertThrows(NoSuchElementException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite));
+        assertThrows(NoSuchElementException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite),
+                "On peut pas ajouter un produit inexistant à une commande");
     }
 
     @Test
@@ -74,7 +75,8 @@ class LigneServiceTest {
         int quantite = 1;
         assertEquals(Optional.empty(), commandeDao.findById(commandeNum));
         assertNotNull(produitDao.findById(produitRef));
-        assertThrows(NoSuchElementException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite));
+        assertThrows(NoSuchElementException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite),
+                "On ne peut pas ajouter une ligne à une commande inexistante");
     }
 
     @Test
@@ -82,7 +84,8 @@ class LigneServiceTest {
         Integer commandeNum = NUMERO_COMMANDE_DEJA_LIVREE;
         Integer produitRef = REFERENCE_PRODUIT_DISPONIBLE_1;
         int quantite = 1;
-        assertThrows(DataIntegrityViolationException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite));
+        assertThrows(DataIntegrityViolationException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite),
+                "On peut pas ajouter une ligne de commande à une commande déjà livrée");
     }
 
     @Test
@@ -90,7 +93,8 @@ class LigneServiceTest {
         Integer commandeNum = NUMERO_COMMANDE_PAS_LIVREE;
         Integer produitRef = REFERENCE_PRODUIT_DISPONIBLE_1;
         int quantite = 110;
-        assertThrows(IllegalArgumentException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite));
+        assertThrows(IllegalArgumentException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite),
+                "Pour une ligne de commande la quantité doit être inférieure ou égale aux nombre de produits en stock");
     }
 
     @Test
@@ -105,6 +109,7 @@ class LigneServiceTest {
         // On récupère le produit après l'avoir ajouter à la ligne de commande
         produit = produitDao.findById(produitRef).orElseThrow();
         // On vérifie si la mise à jour du nombre d'unités commandée a été prise en compte
-        assertEquals(quantiteCommandee + quantite, produit.getUnitesCommandees());
+        assertEquals(quantiteCommandee + quantite, produit.getUnitesCommandees(),
+                "Pour une nouvelle ligne de commande on incrémente le nombre de produits commandés de la quantité de produit commandé");
     }
 }
