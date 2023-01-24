@@ -9,8 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,6 +26,8 @@ class CommandeServiceTest {
     private static final BigDecimal REMISE_POUR_GROS_CLIENT = new BigDecimal("0.15");
     static final int NUMERO_COMMANDE_DEJA_LIVREE = 99999;
     static final int NUMERO_COMMANDE_PAS_LIVREE  = 99998;
+
+    static final int NUMERO_COMMANDE_INEXISTANTE = 100000;
 
     static final int REFERENCE_PRODUIT_DISPONIBLE_1 = 93;
 
@@ -56,6 +61,13 @@ class CommandeServiceTest {
     }
 
     @Test
+    public void testAjouterLigneCommandeInexistante() {
+        Integer commandeNum = NUMERO_COMMANDE_INEXISTANTE;
+        assertThrows(NoSuchElementException.class, () -> service.enregistreExpedition(commandeNum));
+    }
+
+
+    @Test
     void testCommandeDejaLivree() {
         Integer commandeNum = NUMERO_COMMANDE_DEJA_LIVREE;
         assertThrows(DataIntegrityViolationException.class, () -> service.enregistreExpedition(commandeNum));
@@ -69,6 +81,13 @@ class CommandeServiceTest {
         for(Ligne ligne : commande.getLignes()){
             assertEquals(10, ligne.getProduit().getUnitesEnStock());
         }
+    }
+
+    @Test
+    public void verifierDateExpedition() {
+        Integer commandeNum = NUMERO_COMMANDE_PAS_LIVREE;
+        var commande = service.enregistreExpedition(commandeNum);
+        assertEquals(LocalDate.now(), commande.getEnvoyeele(), "La date d'expédition de la commande doit correspondre à la date aujourd'hui");
     }
 
 }

@@ -6,6 +6,7 @@ import comptoirs.dao.ProduitRepository;
 import comptoirs.entity.Ligne;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Positive;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -53,19 +54,23 @@ public class LigneService {
         var resteEnStock = produit.getUnitesEnStock();
         // On crée une nouvelle ligne de commande
         var ligne = new Ligne();
-        // On vérifie que la commande n'est pas encore envoyé
-        // On vérifie que la quantité à commander est positive
-        // On vérifie qu'il y a assez de produit en stock pour prendre en compte la commande
-        if( commande.getEnvoyeele() == null && quantite > 0 && resteEnStock >= quantite ) {
-            ligne.setCommande(commande);
-            ligne.setProduit(produit);
-            ligne.setQuantite(quantite);
-            // Enregistrer une nouvelle ligne dans la base de données
-            ligneDao.save(ligne);
-            // Mettre à jour le nombre de produit commandé
-            produit.setUnitesCommandees(produit.getUnitesCommandees() + quantite);
+        // On vérifie que la commande n'est pas encore envoyée
+        if( commande.getEnvoyeele() == null ) {
+            // On vérifie que la quantité à commander est positive
+            // On vérifie qu'il y a assez de produit en stock pour prendre en compte la commande
+            if( quantite > 0 && resteEnStock >= quantite ){
+                ligne.setCommande(commande);
+                ligne.setProduit(produit);
+                ligne.setQuantite(quantite);
+                // Enregistrer une nouvelle ligne dans la base de données
+                ligneDao.save(ligne); // Ajout d'une nouvelle ligne "save" pour insérer une nouvelle ligne
+                // Mettre à jour le nombre de produit commandé
+                produit.setUnitesCommandees(produit.getUnitesCommandees() + quantite);
+            } else {
+                throw new IllegalArgumentException("La quantité doit être positive ou inférieure aux nombre de produit en stock");
+            }
         }else {
-            throw new IllegalArgumentException("Aucune ligne ajoutée");
+            throw new DataIntegrityViolationException("On ne peut pas ajouter une ligne à une commande déjà envoyée");
         }
         return ligne;
     }

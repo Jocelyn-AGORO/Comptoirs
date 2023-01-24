@@ -88,7 +88,7 @@ public class CommandeService {
             // On décréménte la quantité en stock du produit de la quantité commandé
             produit.setUnitesEnStock(produit.getUnitesEnStock() - ligne.getQuantite());
             // On met à effet la modification du produit dans la base de donnée
-            // produitDao.save(produit);
+            // produitDao.save(produit); // pas besoin d'appeler save dans un serice annoté transactional
         }
         // On met à effet la modification de la commande dans la base de donnée
         return commande;

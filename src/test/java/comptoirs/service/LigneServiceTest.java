@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDate;
 import java.util.NoSuchElementException;
@@ -73,7 +74,6 @@ class LigneServiceTest {
         int quantite = 1;
         assertEquals(Optional.empty(), commandeDao.findById(commandeNum));
         assertNotNull(produitDao.findById(produitRef));
-
         assertThrows(NoSuchElementException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite));
     }
 
@@ -82,6 +82,14 @@ class LigneServiceTest {
         Integer commandeNum = NUMERO_COMMANDE_DEJA_LIVREE;
         Integer produitRef = REFERENCE_PRODUIT_DISPONIBLE_1;
         int quantite = 1;
+        assertThrows(DataIntegrityViolationException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite));
+    }
+
+    @Test
+    public void testVerifierQuantiteProduitSuffisante() {
+        Integer commandeNum = NUMERO_COMMANDE_PAS_LIVREE;
+        Integer produitRef = REFERENCE_PRODUIT_DISPONIBLE_1;
+        int quantite = 110;
         assertThrows(IllegalArgumentException.class, () -> service.ajouterLigne(commandeNum, produitRef, quantite));
     }
 
